@@ -1,0 +1,2 @@
+http://openapi.tago.go.kr/openapi/service/BusLcInfoInqireService/getCtyCodeList?serviceKey=$serviceKey
+http://openapi.tago.go.kr/openapi/service/BusLcInfoInqireService/getRouteAcctoSpcifySttnAccesBusLcInfo?serviceKey=xYxVHPIgV4wPMjO%2Bq83XLNQHs4Mle4CMHOq%2FadpVgRfcNwQgAQJdGQWYSsjybv0fDNh3WZ65nTR03el3y5YjrA%3D%3D&routeId=DJB30300052&nodeId=DJB8005621&cityCode=25
