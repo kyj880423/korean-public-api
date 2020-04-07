@@ -6,25 +6,19 @@
  *******************************/
 package com.kyj.api.korean.pub;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kyj.api.korean.pub.models.newaddress.CmmMsgHeader;
+import com.kyj.api.korean.pub.models.commons.Result;
 import com.kyj.api.korean.pub.models.newaddress.NewAddressListResponse;
-import com.kyj.api.korean.pub.utils.RequestUtil;
-import com.kyj.api.korean.pub.utils.ValueUtil;
 
 /**
  * 새주소 5자리 우편번호 조회 서비스 <br/>
@@ -39,29 +33,13 @@ public class NewAddressServiceImpl extends AbstractService<NewAddressListRespons
 	private NewAddressListResponse response;
 
 	@Override
-	public NewAddressListResponse request() throws Exception {
+	public NewAddressListResponse request(Result r) throws Exception {
+		if (r.isError()) {
+			return this.response = null;
+		}
 
-		String url = evaluate();
-
-		this.response = RequestUtil.request200(new URL(url), new BiFunction<InputStream, Charset, NewAddressListResponse>() {
-			@Override
-			public NewAddressListResponse apply(InputStream t, Charset u) {
-				try {
-					String json = ValueUtil.toString(t, u);
-					LOGGER.debug("JSON Result : {}", json);
-					return to(json);
-				} catch (Exception e) {
-					NewAddressListResponse newAddressListResponse = new NewAddressListResponse();
-					CmmMsgHeader cmmMsgHeader = new CmmMsgHeader();
-					cmmMsgHeader.setTotalCount(0);
-					cmmMsgHeader.setSuccessYN("N");
-					cmmMsgHeader.setErrMsg(ValueUtil.toString(e));
-					newAddressListResponse.setCmmMsgHeader(cmmMsgHeader);
-					return newAddressListResponse;
-				}
-			}
-		}, false);
-
+		String dataString = r.getDataString();
+		this.response = to(dataString);
 		this.currentPage = this.response.getCmmMsgHeader().getCurrentPage();
 		return response;
 
@@ -118,7 +96,6 @@ public class NewAddressServiceImpl extends AbstractService<NewAddressListRespons
 		HashMap<String, Object> hashMap = new HashMap<String, Object>();
 		hashMap.put("countPerPage", countPerPage);
 		hashMap.put("currentPage", currentPage);
-		hashMap.put("serviceKey", getApiKey());
 		hashMap.put("searchSe", searchSe.getName());
 		try {
 			hashMap.put("srchwrd", URLEncoder.encode(srchwrd, "utf-8"));

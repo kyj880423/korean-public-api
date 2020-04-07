@@ -145,7 +145,7 @@ public class RequestUtil {
 
 			if (ValueUtil.isEmpty(contentEncoding)) {
 				contentEncoding = "UTF-8";
-				LOGGER.debug("force encoding 'UTF-8' -  what is encoding ?????  ########################################");
+				LOGGER.debug("override default encoding 'UTF-8'");
 			}
 
 			LOGGER.debug("code : [{}] [{}] URL : {} ,  ", conn.getResponseCode(), contentEncoding, url.toString());

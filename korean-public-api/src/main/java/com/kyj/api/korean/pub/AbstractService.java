@@ -11,15 +11,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.BiFunction;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
+import com.kyj.api.korean.pub.models.commons.Result;
+import com.kyj.api.korean.pub.utils.RequestUtil;
 import com.kyj.api.korean.pub.utils.ValueUtil;
 
 /**
@@ -72,7 +79,39 @@ public abstract class AbstractService<T> implements Service<T> {
 	 */
 	private String apiKey;
 
-	public abstract T request() throws Exception;
+	/**
+	 *
+	 */
+	public T request() throws Exception {
+		String url = convertUrl();
+
+		Result r = RequestUtil.request200(new URL(url), new BiFunction<InputStream, Charset, Result>() {
+			@Override
+			public Result apply(InputStream t, Charset u) {
+				var r = new Result();
+				try {
+					String json = ValueUtil.toString(t, u);
+					r.setDataString(json);
+					r.setDataType("application/json");
+				} catch (Exception e) {
+					r.setError(true);
+					r.setErrMeg(e.getMessage());
+				}
+				return r;
+			}
+		}, false);
+
+		return request(r);
+	}
+
+	/**
+	 * 처리된 데이터 결과로 Bean을 리턴하는 로직을 작성한다 <br/>
+	 * 
+	 * @param r
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract T request(Result r) throws Exception;
 
 	/*
 	 * (non-Javadoc)
@@ -138,7 +177,7 @@ public abstract class AbstractService<T> implements Service<T> {
 	 * @return
 	 * @throws IOException
 	 */
-	protected String evaluate() throws IOException {
+	protected String convertUrl() throws IOException {
 
 		File file = getSeviceApiDir();
 		if (!file.exists())
@@ -146,8 +185,17 @@ public abstract class AbstractService<T> implements Service<T> {
 
 		String template = readTemplate(file);
 
-		VelocityContext velocityContext = new VelocityContext(getParameter());
+		Map<String, Object> parameter = getParameter();
+		if (parameter == null) {
+			parameter = new HashMap<>();
+		}
+		if (!parameter.containsKey("serviceKey")) {
+			parameter.put("serviceKey", getApiKey());
+		}
+
+		VelocityContext velocityContext = new VelocityContext(parameter);
 		StringWriter writer = new StringWriter();
+
 		Velocity.evaluate(velocityContext, writer, this.getClass().getName(), template);
 
 		return writer.toString();

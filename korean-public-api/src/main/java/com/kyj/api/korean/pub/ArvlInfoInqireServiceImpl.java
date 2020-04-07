@@ -6,12 +6,8 @@
  *******************************/
 package com.kyj.api.korean.pub;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kyj.api.korean.pub.models.arvInformation.ArvInformationDVO;
-import com.kyj.api.korean.pub.models.arvInformation.HeaderDVO;
-import com.kyj.api.korean.pub.models.newaddress.NewAddressListResponse;
-import com.kyj.api.korean.pub.utils.RequestUtil;
-import com.kyj.api.korean.pub.utils.ValueUtil;
+import com.kyj.api.korean.pub.models.commons.Result;
 
 /**
  * 도착정보 조회 서비스 <br/>
@@ -35,34 +28,6 @@ public class ArvlInfoInqireServiceImpl extends AbstractService<ArvInformationDVO
 	private static final Logger LOGGER = LoggerFactory.getLogger(ArvlInfoInqireServiceImpl.class);
 
 	private ArvInformationDVO response;
-
-	@Override
-	public ArvInformationDVO request() throws Exception {
-
-		String url = evaluate();
-
-		this.response = RequestUtil.request200(new URL(url), new BiFunction<InputStream, Charset, ArvInformationDVO>() {
-			@Override
-			public ArvInformationDVO apply(InputStream t, Charset u) {
-				try {
-					String json = ValueUtil.toString(t, u);
-					LOGGER.debug("JSON Result : {}", json);
-					return to(json);
-				} catch (Exception e) {
-					ArvInformationDVO d = new ArvInformationDVO();
-					HeaderDVO h = new HeaderDVO();
-					h.setResultCode("");
-					h.setResultMsg(ValueUtil.toString(e));
-					d.setHeader(h);
-					return d;
-				}
-			}
-		}, false);
-
-		// this.currentPage = this.response.getCmmMsgHeader().getCurrentPage();
-		return response;
-
-	}
 
 	/**
 	 * @작성자 : KYJ (callakrsos@naver.com)
@@ -106,6 +71,18 @@ public class ArvlInfoInqireServiceImpl extends AbstractService<ArvInformationDVO
 		HashMap<String, Object> hashMap = new HashMap<String, Object>();
 		hashMap.put("serviceKey", getApiKey());
 		return hashMap;
+	}
+
+	/**
+	 *
+	 */
+	@Override
+	public ArvInformationDVO request(Result r) throws Exception {
+		if (r.isError())
+			return null;
+
+		String dataString = r.getDataString();
+		return to(dataString);
 	}
 
 }
