@@ -6,6 +6,7 @@
  *******************************/
 package com.kyj.api.korean.pub;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kyj.api.korean.pub.models.commons.Result;
+import com.kyj.api.korean.pub.utils.ValueUtil;
 
 /**
  * 
@@ -30,6 +32,7 @@ public class RTMSOBJSvcServiceImpl extends AbstractService<Void> {
 	private String lawdCd;
 	private int numOfRows = 10;;
 	private int pageNo = 1;
+	private String dealYmd;
 
 	@Override
 	public Void request(Result r) throws Exception {
@@ -49,8 +52,20 @@ public class RTMSOBJSvcServiceImpl extends AbstractService<Void> {
 		param.put("lawdCd", lawdCd);
 		param.put("pageNo", pageNo);
 
-		String format = new SimpleDateFormat("yyyyMM").format(new Date());
-		param.put("dealYmd", format);
+		String dateString = "";
+		var formatter = new SimpleDateFormat("yyyyMM");
+		if (this.dealYmd == null || this.dealYmd.trim().length() == 0) {
+			dateString = formatter.format(new Date());
+		} else {
+			try {
+				Date parse = formatter.parse(this.dealYmd);
+			} catch (ParseException e) {
+				LOGGER.error(ValueUtil.toString(e));
+				dateString = formatter.format(new Date());
+			}
+			dateString = formatter.format(this.dealYmd);
+		}
+		param.put("dealYmd", dateString);
 
 		return param;
 	}

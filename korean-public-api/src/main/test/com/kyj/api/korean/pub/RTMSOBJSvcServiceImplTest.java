@@ -21,6 +21,7 @@ public class RTMSOBJSvcServiceImplTest {
 		var s = new RTMSOBJSvcServiceImpl();
 		s.setLawdCd("11110");
 		s.setPageNo(1);
+		
 		Void request = s.request();
 	}
 
